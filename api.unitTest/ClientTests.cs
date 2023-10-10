@@ -10,42 +10,18 @@ namespace api.unitTest
     [TestFixture]
 	public class ClientTests
 	{
-        private IClientService _clientService;
         private Client[] _sampleClients;
 
         [SetUp]
         public void Setup()
         {
-        //    // Initialize the mock repository and sample data
-        //    var mockRepository = new Mock<IClientService>();
             _sampleClients = new Client[]
-        {
-            new Client { Id = "345345sdfu", FirstName = "Bucky", LastName = "Barnes", Email = "winter.soldier@email.com" },
-            new Client { Id = "345345sdfs", FirstName = "Robert", LastName = "McCall", Email = "the.equalizer@email.com" },
-            new Client { Id = "345345sdf4", FirstName = "John", LastName = "Wick", Email = "john.wick@email.com" },
-            new Client { Id = "345345sdf4", FirstName = "Jason", LastName = "Bourne", Email = "jason.bourne@email.com" }
-        };
-
-            //    // Configure methods on the mock repository
-            //    mockRepository.Setup(repo => repo.Create(It.IsAny<Client>()))
-            //        .Returns((Task.CompletedTask));
-
-            //    mockRepository.Setup(repo => repo.Update(It.IsAny<Client>()))
-            //        .Returns((Task.CompletedTask));
-
-            //    mockRepository.Setup(repo => repo.Search(It.IsAny<string>()))
-            //        .ReturnsAsync((string keyword) =>
-            //        {
-            //            return _sampleClients
-            //                .Where(c => c.FirstName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-            //                        c.LastName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-            //                .ToArray();
-            //        });
-
-            //    mockRepository.Setup(repo => repo.Get())
-            //       .ReturnsAsync(() => _sampleClients);
-
-            //    _clientService = mockRepository.Object;
+            {
+                new Client { Id = "345345sdfu", FirstName = "Bucky", LastName = "Barnes", Email = "winter.soldier@email.com" },
+                new Client { Id = "345345sdfs", FirstName = "Robert", LastName = "McCall", Email = "the.equalizer@email.com" },
+                new Client { Id = "345345sdf4", FirstName = "John", LastName = "Wick", Email = "john.wick@email.com" },
+                new Client { Id = "345345sdf4", FirstName = "Jason", LastName = "Bourne", Email = "jason.bourne@email.com" }
+            };
         }
 
         [Test]
