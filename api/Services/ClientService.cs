@@ -81,21 +81,10 @@ namespace api.Services
         {
             try
             {
-                var existingClient = await _clientRepository.GetById(client.Id);
-
                 if (!ValidateEmail(client.Email))
                     throw new Exception("Email address provided is not valid.");
 
                 await _clientRepository.Update(client);
-
-                if (existingClient != null)
-                {
-                    if (existingClient.Email != client.Email)
-                    {
-                        //await _backGroundService.Execute();
-                        //await ExecuteEmailAndDocumentRepository(client);
-                    }
-                }
             }
             catch (Exception ex)
             {

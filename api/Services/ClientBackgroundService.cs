@@ -14,6 +14,7 @@ namespace api.Services
         private readonly IServiceProvider _provider;
         private readonly IEmailRepository _emailRepository;
         private readonly IDocumentRepository _documentRepository;
+        private bool executeBackgroundTasks = false;
 
         public ClientBackgroundService(IServiceProvider provider, IEmailRepository emailRepository, IDocumentRepository documentRepository)
         {
@@ -22,13 +23,26 @@ namespace api.Services
             _documentRepository = documentRepository;
         }
 
+        public void StartBackgroundTasks()
+        {
+            executeBackgroundTasks = true;
+        }
+
+        public void StopBackgroundTasks()
+        {
+            executeBackgroundTasks = false;
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                // Implement your background tasks here
-                await SendEmailAsync();
-                await UpdateDocumentsAsync();
+                if (executeBackgroundTasks)
+                {
+                    // Implement your background tasks here
+                    await SendEmailAsync();
+                    await UpdateDocumentsAsync();
+                }
 
                 // Adjust the delay as needed; this example waits for 5 minutes
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);

@@ -75,8 +75,7 @@ app.MapPost("/clients", async (IClientService _clientService, Client client) =>
     {
         await _clientService.Create(client);
 
-        await backgroundService.TriggerBackgroundTasksAsync();
-
+         backgroundService.StartBackgroundTasks();
 
         return Results.Ok("Client added.");
     }
@@ -99,7 +98,7 @@ app.MapPut("/clients/{id}", async (IClientService _clientService, string id, Cli
             if (existingClient.Email != client.Email)
             {
                 // Trigger the background service to run tasks (e.g., SendEmail() and UpdateDocuments())
-                await backgroundService.TriggerBackgroundTasksAsync();
+                 backgroundService.StartBackgroundTasks();
             }
         }
 
