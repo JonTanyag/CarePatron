@@ -3,6 +3,7 @@ using api.Models;
 using api.Repositories;
 using api.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,11 +31,18 @@ services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase(databa
 
 services.AddScoped<DataSeeder>();
 services.AddScoped<IClientRepository, ClientRepository>();
-services.AddScoped<IEmailRepository, EmailRepository>();
-services.AddScoped<IDocumentRepository, DocumentRepository>();
+services.AddHostedService<ClientBackgroundService>();
+services.AddSingleton<IEmailRepository, EmailRepository>();
+services.AddSingleton<IDocumentRepository, DocumentRepository>();
 services.AddScoped<IClientService, ClientService>();
 
+
 var app = builder.Build();
+
+
+var backgroundService = new ClientBackgroundService(app.Services,
+    app.Services.GetRequiredService<IEmailRepository>(),
+    app.Services.GetRequiredService<IDocumentRepository>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -63,12 +71,57 @@ app.MapGet("/api/clients/{searchParam}", async (IClientService _clientService, s
 
 app.MapPost("/clients", async (IClientService _clientService, Client client) =>
 {
-    await _clientService.Create(client);
+    try
+    {
+        await _clientService.Create(client);
+
+        await backgroundService.TriggerBackgroundTasksAsync();
+
+
+        return Results.Ok("Client added.");
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok("An error occurred while adding client. " + ex.Message);
+    }
 });
+
 
 app.MapPut("/clients/{id}", async (IClientService _clientService, string id, Client client) =>
 {
-    await _clientService.Update(client);
+    try
+    {
+        var existingClient = await _clientService.GetById(client.Id);
+        await _clientService.Update(client);
+
+        if (existingClient != null)
+        {
+            if (existingClient.Email != client.Email)
+            {
+                // Trigger the background service to run tasks (e.g., SendEmail() and UpdateDocuments())
+                await backgroundService.TriggerBackgroundTasksAsync();
+            }
+        }
+
+        return Results.Ok(client);
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok("An error occurred while updating client. " + ex.Message);
+    }
+});
+
+app.MapGet("/clients/{id}", async (int id, IClientService _clientService) =>
+{
+    var client = await _clientService.Get();
+    if (client != null)
+    {
+        return Results.Ok(client);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
 });
 
 

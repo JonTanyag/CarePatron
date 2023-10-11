@@ -15,6 +15,10 @@ namespace api.unitTest
         [SetUp]
         public void Setup()
         {
+            var mockEmailRepository = new Mock<IEmailRepository>();
+            var mockDocumentRepository = new Mock<IDocumentRepository>();
+            var mockBagroundService = new Mock<ClientBackgroundService>();
+
             _sampleClients = new Client[]
             {
                 new Client { Id = "345345sdfu", FirstName = "Bucky", LastName = "Barnes", Email = "winter.soldier@email.com" },
@@ -29,6 +33,7 @@ namespace api.unitTest
         {
             // Arrange
             var mockRepository = new Mock<IClientRepository>();
+
             var _clientService = new ClientService(mockRepository.Object);
             var newClient = new Client {Id = "345345sdf1", FirstName = "Alice", LastName = "Wonderland", Email = "alice.wonderland@email.com", PhoneNumber = "324234" };
 
@@ -77,7 +82,8 @@ namespace api.unitTest
             };
 
             var mockRepository = new Mock<IClientRepository>();
-                mockRepository.Setup(repo => repo.Get())
+
+            mockRepository.Setup(repo => repo.Get())
                     .ReturnsAsync(_sampleClients);
 
             var _clientService = new ClientService(mockRepository.Object);
@@ -96,6 +102,7 @@ namespace api.unitTest
         {
             //Arrange
             var mockRepository = new Mock<IClientRepository>();
+
             mockRepository.Setup(repo => repo.Get())
                 .ReturnsAsync(_sampleClients);
 

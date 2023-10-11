@@ -9,6 +9,7 @@ namespace api.Services
 	{
         Task<Client[]> Search(string searchParam);
         Task<Client[]> Get();
+        Task<Client?> GetById(string id);
         Task Create(Client client);
         Task Update(Client client);
     }
@@ -16,31 +17,47 @@ namespace api.Services
 	public class ClientService : IClientService
 	{
         private readonly IClientRepository _clientRepository;
-		public ClientService(IClientRepository clientRepository)
+
+        public ClientService(IClientRepository clientRepository)
 		{
             _clientRepository = clientRepository;
 		}
 
         public async Task Create(Client client)
         {
-            if (!ValidateEmail(client.Email))
-                throw new Exception("Email address provided is not valid.");
+            try
+            {
+                if (!ValidateEmail(client.Email))
+                    throw new Exception("Email address provided is not valid.");
 
-            await _clientRepository.Create(client);
+                await _clientRepository.Create(client);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
         }
 
         public async Task<Client[]> Search(string searchParam)
         {
-            var clients = await _clientRepository.Get();
-
-            if (clients != null)
+            try
             {
-                var results = clients.Where(x => x.FirstName.Contains(searchParam, StringComparison.OrdinalIgnoreCase)
-                    || x.LastName.Contains(searchParam, StringComparison.OrdinalIgnoreCase)).ToArray();
-                return results;
-            }
+                var clients = await _clientRepository.Get();
 
-            return new Client[0];
+                if (clients != null)
+                {
+                    var results = clients.Where(x => x.FirstName.Contains(searchParam, StringComparison.OrdinalIgnoreCase)
+                        || x.LastName.Contains(searchParam, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    return results;
+                }
+
+                return new Client[0];
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
         }
 
         public async Task<Client[]> Get()
@@ -50,12 +67,40 @@ namespace api.Services
             return clients;
         }
 
+        public async Task<Client?> GetById(string id)
+        {
+            var client = await _clientRepository.GetById(id);
+
+            if (client == null)
+                return null;
+
+            return client;
+        }
+
         public async Task Update(Client client)
         {
-            if (!ValidateEmail(client.Email))
-                throw new Exception("Email address provided is not valid.");
+            try
+            {
+                var existingClient = await _clientRepository.GetById(client.Id);
 
-            await _clientRepository.Update(client);
+                if (!ValidateEmail(client.Email))
+                    throw new Exception("Email address provided is not valid.");
+
+                await _clientRepository.Update(client);
+
+                if (existingClient != null)
+                {
+                    if (existingClient.Email != client.Email)
+                    {
+                        //await _backGroundService.Execute();
+                        //await ExecuteEmailAndDocumentRepository(client);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
         }
 
         private bool ValidateEmail(string email)
@@ -70,6 +115,13 @@ namespace api.Services
             // Check if the email matches the pattern
             return match.Success;
         }
+
+        //
+        //private async Task ExecuteEmailAndDocumentRepository(Client client)
+        //{
+        //    await _emailRepository.Send(client.Email, "Hi there - welcome to my Carepatron portal.");
+        //    await _documentRepository.SyncDocumentsFromExternalSource(client.Email);
+        //}
     }
 }
 
